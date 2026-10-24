@@ -1,6 +1,6 @@
 import 'package:adhan/adhan.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hijri/hijri.dart';
+import 'package:hijri/hijri_calendar.dart';
 import 'package:hive/hive.dart';
 
 // ── التخزين والموقع ────────────────────────────────────────────────────

@@ -54,10 +54,12 @@ class LocationService {
 
     var city = 'موقعك';
     try {
+      await setLocaleIdentifier('ar');
+    } catch (_) {}
+    try {
       final marks = await placemarkFromCoordinates(
         pos.latitude,
         pos.longitude,
-        localeIdentifier: 'ar',
       );
       if (marks.isNotEmpty) {
         city = marks.first.locality ??

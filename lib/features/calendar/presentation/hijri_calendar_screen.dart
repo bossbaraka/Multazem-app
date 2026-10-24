@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hijri/hijri.dart';
+import 'package:hijri/hijri_calendar.dart';
 
 import '../../../core/providers/prayer_providers.dart';
 import '../../../core/theme/app_colors.dart';
@@ -24,7 +24,7 @@ class HijriCalendarScreen extends ConsumerWidget {
     final today = ref.watch(hijriTodayProvider);
     final daysInMonth = _monthLength(today.hYear, today.hMonth);
     final firstGreg = HijriCalendar().hijriToGregorian(today.hYear, today.hMonth, 1);
-    final leadEmpty = (firstGreg.weekday - DateTime.saturday) % 7;
+    final leadEmpty = ((firstGreg.weekday - DateTime.saturday) % 7).toInt();
     final todayKey = _dayKey(DateTime.now());
     final fastingToday = box.get('fast_$todayKey') as String?;
 

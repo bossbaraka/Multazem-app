@@ -62,9 +62,9 @@ class _IslamicPatternPainter extends CustomPainter {
   }
 
   static double _cos(int i) =>
-      [1, .71, 0, -.71, -1, -.71, 0, .71][i];
+      const [1.0, .71, 0.0, -.71, -1.0, -.71, 0.0, .71][i];
   static double _sin(int i) =>
-      [0, .71, 1, .71, 0, -.71, -1, -.71][i];
+      const [0.0, .71, 1.0, .71, 0.0, -.71, -1.0, -.71][i];
 
   @override
   bool shouldRepaint(covariant _IslamicPatternPainter old) => old.color != color;

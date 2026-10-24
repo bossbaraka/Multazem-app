@@ -70,7 +70,7 @@ class _SurahReaderScreenState extends ConsumerState<SurahReaderScreen> {
             builder: (context, _, __) {
               final font = _repo.fontSize;
               final lastAyah = (_repo.lastRead()?['surah'] == s.number)
-                  ? _repo.lastRead()?['ayah'] as int?
+                  ? (_repo.lastRead()?['ayah'] as int?)
                   : null;
 
               return ListView(

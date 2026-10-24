@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 
 import '../../../core/providers/prayer_providers.dart';
 import '../../../core/theme/app_colors.dart';
