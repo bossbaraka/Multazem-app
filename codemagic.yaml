@@ -1,7 +1,6 @@
 # ─────────────────────────────────────────────────────────────
 # Codemagic CI — بناء «مُلتزم» سحابياً بدون تثبيت Flutter محلياً
-# الاستخدام: ارفع المشروع إلى GitHub (خاص) ← codemagic.io ← Add app
-# ← Start build ← اختر workflow ← حمّل APK / IPA من صفحة النتائج
+# الاستخدام: Start new build ← اختر workflow ← حمّل APK / IPA من Artifacts
 # ─────────────────────────────────────────────────────────────
 workflows:
 
@@ -27,7 +26,7 @@ workflows:
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
 
-  # 🍎 iOS: بناء IPA بدون توقيع → يوقعّه SideStore على جهازك بحساب Apple مجاني
+  # 🍎 iOS: بناء IPA غير موقّع → يوقّعه SideStore على جهازك بحساب Apple مجاني
   ios-ipa:
     name: iOS IPA لـ SideStore (بدون Mac)
     max_build_duration: 60
@@ -42,7 +41,14 @@ workflows:
           flutter create . --org com.multazim.app --platforms=ios
       - name: pub get
         script: flutter pub get
-      - name: بناء IPA غير موقّع
-        script: flutter build ipa --no-codesign
+      - name: بناء .app غير موقّع (بدون archive — لا يتطلب Apple ID)
+        script: flutter build ios --release --no-codesign
+      - name: تغليف IPA يدوياً (Payload + zip — ما يقبله SideStore)
+        script: |
+          mkdir -p Payload
+          cp -R "build/ios/iphoneos/Runner.app" Payload/
+          zip -qr multazim-unsigned.ipa Payload
+          rm -rf Payload
+          ls -lh multazim-unsigned.ipa
     artifacts:
-      - build/ios/ipa/*.ipa
+      - multazim-unsigned.ipa
