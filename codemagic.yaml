@@ -9,7 +9,7 @@ workflows:
   android-apk:
     name: Android APK (تشغيل خاص)
     max_build_duration: 30
-    instance_type: linux_x2
+    instance_type: linux   # مجاني — لو رُفض، بدّلها بـ mac_mini_m1
     environment:
       flutter: stable
     scripts:
