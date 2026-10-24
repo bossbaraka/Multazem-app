@@ -1,0 +1,53 @@
+{
+  "note": "قائمة جهات رسمية/موثوقة — راجع رسمية كل جهة ورابطها قبل أي إصدار. التطبيق لا يجمع أموالاً: الفتح عبر الموقع الرسمي فقط.",
+  "charities": [
+    {
+      "name": "جمعية الهلال الأحمر الفلسطيني",
+      "url": "https://www.palestinercs.org",
+      "country": "فلسطين",
+      "categories": ["إغاثة عاجلة", "صحة", "كفالة"],
+      "featured": true,
+      "verified": true
+    },
+    {
+      "name": "مركز الملك سلمان للإغاثة والأعمال الإنسانية — منصة تبرع",
+      "url": "https://donate.ksrelief.org",
+      "country": "دولي",
+      "categories": ["إغاثة عاجلة", "صدقة", "مشاريع"],
+      "featured": true,
+      "verified": true
+    },
+    {
+      "name": "منصة إحسان (العمل الخيري)",
+      "url": "https://ehsan.sa",
+      "country": "السعودية",
+      "categories": ["صدقة", "زكاة", "كفالة يتيم", "وقف"],
+      "featured": false,
+      "verified": true
+    },
+    {
+      "name": "صندوق الزكاة",
+      "url": "https://www.zakatfund.gov.ae",
+      "country": "الإمارات",
+      "categories": ["زكاة", "كفالة"],
+      "featured": false,
+      "verified": true
+    },
+    {
+      "name": "هيئة الهلال الأحمر الإماراتي",
+      "url": "https://www.emiratesrc.ae",
+      "country": "الإمارات",
+      "categories": ["إغاثة عاجلة", "صدقة", "مشاريع"],
+      "featured": false,
+      "verified": true
+    },
+    {
+      "name": "الجمعية الوطنية للهلال الأحمر الأردني",
+      "url": "https://www.jnrcs.org",
+      "country": "الأردن",
+      "categories": ["إغاثة عاجلة", "صحة"],
+      "featured": false,
+      "verified": true
+    }
+  ]
+}

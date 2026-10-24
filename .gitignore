@@ -1,0 +1,28 @@
+# ── Flutter/Dart ──
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+# ── Android: مفاتيح التوقيع — لا تُرفع أبداً ──
+**/android/.gradle
+**/android/local.properties
+**/android/captures/
+**/android/**/gradle-wrapper.jar
+**/android/key.properties
+**/*.jks
+**/*.keystore
+# ── iOS مولّد ──
+**/ios/**/.mode1v3
+**/ios/**/.mode2v3
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/xcuserdata
+**/ios/Flutter/ephemeral
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+# ── IDEs / OS ──
+.idea/
+.vscode/
+**/*.iml
+.DS_Store

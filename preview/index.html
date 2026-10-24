@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>مُلتزم — معاينة تفاعلية</title>
+<style>
+  :root{
+    --emerald:#0B5D3B; --deep:#083D28; --gold:#C9A227; --gold-l:#E8C766;
+    --ivory:#FAF6ED; --ink:#1E2B26; --soft:#6B7A72; --ok:#1FA05E; --warn:#D98E2B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,sans-serif;background:#e8e2d4;color:var(--ink)}
+  .banner{background:var(--warn);color:#fff;text-align:center;font-size:12px;padding:5px 10px}
+  .phone{max-width:430px;margin:14px auto;background:var(--ivory);border-radius:32px;overflow:hidden;
+    box-shadow:0 24px 60px #0006;border:10px solid #153329;height:calc(100vh - 60px);min-height:640px;
+    display:flex;flex-direction:column}
+  header{background:linear-gradient(135deg,var(--emerald),var(--deep));color:#fff;padding:16px 18px 14px}
+  header h1{font-size:20px}
+  header .sub{color:var(--gold-l);font-size:13px;margin-top:2px}
+  header .greg{color:#ffffffb0;font-size:11px;margin-top:2px}
+  main{flex:1;overflow-y:auto;padding:14px}
+  .tab{display:none}.tab.on{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .card{background:#fff;border:1px solid #C9A22755;border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #0001}
+  .card.tinted{background:#C9A22714}
+  .row{display:flex;align-items:center;gap:10px}
+  .grow{flex:1}
+  h2.sec{font-size:16px;color:var(--emerald);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+  h2.sec::before{content:'';width:5px;height:20px;background:var(--gold);border-radius:3px}
+  .big-time{font-size:38px;color:var(--deep);font-weight:700}
+  .count{color:var(--soft);font-size:13px}
+  .chip{background:#C9A22733;color:var(--deep);border-radius:14px;padding:3px 12px;font-size:13px;font-weight:700}
+  .dots{display:flex;justify-content:center;gap:10px;margin-top:8px}
+  .dot{display:flex;flex-direction:column;align-items:center;font-size:10px;color:var(--soft);gap:3px}
+  .dot i{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--gold);background:#C9A22722;font-style:normal;
+    display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:11px}
+  .dot.done i{background:var(--ok);border-color:var(--ok);color:#fff}
+  .quick{display:flex;gap:8px;margin-bottom:12px}
+  .quick .card{flex:1;margin:0;text-align:center;padding:10px 4px;font-size:11px;font-weight:700;cursor:pointer}
+  .quick .card span{display:block;font-size:19px;margin-bottom:3px}
+  .routine{display:flex;align-items:center;gap:10px}.routine .t{flex:1}
+  .routine small{color:var(--soft);font-size:11px}
+  .chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--soft);display:flex;align-items:center;
+    justify-content:center;cursor:pointer;color:#fff;font-size:13px;background:transparent;flex:none}
+  .chk.on{background:var(--ok);border-color:var(--ok)}
+  .hadith{text-align:center;font-size:14px;line-height:2;color:var(--deep)}
+  nav{display:flex;background:#fff;border-top:1px solid #C9A22744}
+  nav button{flex:1;background:none;border:0;padding:10px 0 12px;font-size:10.5px;color:var(--soft);
+    display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-family:inherit}
+  nav button span{font-size:17px}
+  nav button.on{color:var(--emerald);font-weight:800}
+  nav button.on span{transform:translateY(-2px);transition:.2s}
+  .prayer-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid #C9A22755;border-radius:16px;margin-bottom:8px}
+  .prayer-row.next{background:var(--emerald);color:#fff}
+  .prayer-row.next small,.prayer-row.next .tm{color:var(--gold-l)}
+  .tm{font-size:19px;font-weight:700;color:var(--emerald)}
+  .bars{display:flex;align-items:flex-end;justify-content:space-around;height:130px;padding-top:8px}
+  .bar{width:24px;background:linear-gradient(to top,var(--emerald),var(--gold));border-radius:7px}
+  .bar-l{text-align:center;font-size:10px;color:var(--soft);margin-top:5px}
+  input[type=search]{width:100%;padding:11px 14px;border-radius:14px;border:1px solid #C9A22766;background:#fff;font-family:inherit;margin-bottom:10px}
+  .surah{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid #C9A22722;cursor:pointer}
+  .num{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;
+    justify-content:center;color:var(--emerald);font-weight:700;font-size:13px;flex:none}
+  .surah small{color:var(--soft);font-size:11px;display:block}
+  .surah b{font-size:15px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid2 .card{text-align:center;margin:0;cursor:pointer}
+  .grid2 .card .ic{font-size:26px}
+  .grid2 small{color:var(--soft);font-size:10px}
+  .tas-wrap{text-align:center;padding:8px 0}
+  .tas-ring{width:190px;height:190px;border-radius:50%;margin:10px auto;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;cursor:pointer;user-select:none}
+  .tas-inner{width:160px;height:160px;border-radius:50%;background:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;border:1px solid #C9A22755}
+  .tas-num{font-size:46px;font-weight:800;color:var(--deep)}
+  .targets{display:flex;gap:8px;justify-content:center;margin:8px 0}
+  .pill{padding:5px 16px;border-radius:20px;border:1px solid var(--gold);cursor:pointer;font-size:12px;background:#fff}
+  .pill.on{background:var(--gold);color:#fff}
+  .charity{border:1px solid #C9A22755;background:#fff;border-radius:16px;padding:12px;margin-bottom:10px}
+  .charity .tags span{background:#C9A22722;border-radius:10px;padding:2px 8px;font-size:10px;margin-left:4px;color:var(--deep)}
+  .btn{display:block;width:100%;margin-top:8px;padding:10px;border:0;border-radius:12px;background:var(--emerald);
+    color:#fff;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;font-size:13px}
+  .btn.ghost{background:#C9A2272e;color:var(--deep)}
+  .warn-note{background:#D98E2B18;border:1px solid #D98E2B66;border-radius:14px;padding:10px;font-size:11px;
+    line-height:1.8;display:flex;gap:8px;color:var(--ink)}
+  .kalma{font-size:15px;line-height:2.2;color:var(--deep);margin:6px 0}
+</style>
+</head>
+<body>
+<div class="banner">⚠️ معاينة ويب تفاعلية لمراجعة التصميم والتجربة — التطبيق الفعلي Flutter في مجلد <b>multazim/</b></div>
+<div class="phone">
+  <header>
+    <div class="row">
+      <div class="grow">
+        <h1>مُلتزم ۞</h1>
+        <div class="sub" id="hijri"></div>
+        <div class="greg" id="greg"></div>
+      </div>
+      <div style="font-size:30px">🕌</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ═══ يومي ═══ -->
+    <section class="tab on" id="t-home">
+      <div class="quick">
+        <div class="card" onclick="go('prayer')"><span>🕌</span>الصلاة</div>
+        <div class="card" onclick="go('quran')"><span>📖</span>القرآن</div>
+        <div class="card" onclick="go('adhkar')"><span>📿</span>السبحة</div>
+        <div class="card" onclick="go('giving')"><span>💚</span>العطاء</div>
+      </div>
+      <div class="card tinted" style="cursor:pointer;padding:10px" onclick="alert('✨ جديد — علِّمني الأخلاق:\n\n١٥ خلقاً كريماً بشرح مفصّل ودليل بمصدره وتطبيق يومي:\nصدق · أمانة · بر والدين · صبر · حياء · تواضع · عفو · كظم غيظ · إحسان للجار · وفاء · كف أذى · رحمة · اجتناب غيبة · إفشاء سلام · حسن خلق\n\n🪞 مؤشر الالتزام: قيّم نفسك أسبوعياً بـ ٤ مستويات لكل خلق، فتحصل على نسبة عامة + تحليل قوة/ضعف + شارت لمسارك عبر الأسبوع')">
+        <b>✨ v0.7 — علِّمني الأخلاق + مؤشر الالتزام</b>
+        <div style="font-size:10px;color:var(--soft);margin-top:2px">١٥ خلقاً موثّقاً + مقياس ذاتي أسبوعي — اضغط للتفاصيل</div>
+      </div>
+      <div class="card tinted" style="cursor:pointer;padding:10px;border-color:#C9A227" onclick="alert('🚀 v0.8 — جاهزية النشر:\n\n✅ أيقونات Launcher كاملة (أندرويد ٥ كثافات adaptive + iOS ‏١٣ حجماً) من شعار مُلتزم\n✅ Splash أصلي + صورة متجر ٥١٢ وخلفية ١٠٢٤×٥٠٠\n✅ AndroidManifest بأذونات مبرّرة + توقيع Release + ProGuard\n✅ سياسة خصوصية عربية (كل البيانات محلية ١٠٠٪)\n✅ وصف متجر ASO عربي كامل + إجابات Data Safety\n✅ دليل RELEASE.md خطوة بخطوة حتى الرفع\n\nكل شيء في مجلد deploy/ — افتحه الآن')">
+        <b>🚀 v0.8 — جاهز للنشر</b>
+        <div style="font-size:10px;color:var(--soft);margin-top:2px">أيقونات + splash + توقيع + سياسة خصوصية + وصف متجر + دليل رفع — في deploy/</div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <b class="grow">الصلاة القادمة</b>
+          <span class="chip" id="nextName">…</span>
+        </div>
+        <div class="big-time" id="nextTime">—:—</div>
+        <div class="count">تبقّى على الأذان <b id="cd">—:—:—</b></div>
+        <div class="dots" id="dots"></div>
+      </div>
+
+      <h2 class="sec">خطة يومك</h2>
+      <div id="routine"></div>
+
+      <div class="card tinted" style="margin-top:12px">
+        <div class="hadith">«أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ»</div>
+        <div style="text-align:center;color:var(--soft);font-size:11px">رواه البخاري ٦٤٦٤</div>
+      </div>
+    </section>
+
+    <!-- ═══ الصلاة ═══ -->
+    <section class="tab" id="t-prayer">
+      <div class="card tinted row" style="font-size:12px">
+        <span>📍</span><span class="grow">المواقيت حسب: موقعك الحالي · أم القرى · الشافعي</span>
+      </div>
+      <div id="times"></div>
+      <h2 class="sec">التزامك آخر ٧ أيام</h2>
+      <div class="card">
+        <div class="bars">
+          <div><div class="bar" style="height:100%"></div><div class="bar-l">السبت</div></div>
+          <div><div class="bar" style="height:80%"></div><div class="bar-l">الأحد</div></div>
+          <div><div class="bar" style="height:100%"></div><div class="bar-l">اثنين</div></div>
+          <div><div class="bar" style="height:60%"></div><div class="bar-l">ثلاثاء</div></div>
+          <div><div class="bar" style="height:100%"></div><div class="bar-l">أربعاء</div></div>
+          <div><div class="bar" style="height:80%"></div><div class="bar-l">خميس</div></div>
+          <div><div class="bar" style="height:40%"></div><div class="bar-l">جمعة</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ القرآن ═══ -->
+    <section class="tab" id="t-quran">
+      <div class="card tinted" style="cursor:pointer" onclick="alert('🎓 علِّمني القرآن — في التطبيق:\n\n١) منهج التجويد: ١٢ درساً في ٣ مستويات (نون ساكنة، ميم، مدود، قلقلة، مخارج…) مع أمثلة قرآنية قابلة للتحديد\n٢) التلقين: اسمع وكرِّر الآية بصوت العفاسي حتى ١٠ مرات متتالية\n٣) اختبر نفسك: ١٢ سؤالاً ونتيجة فورية محفوظة')">
+        <b>🎓 علِّمني القرآن</b>
+        <div style="font-size:11px;color:var(--soft);margin-top:3px">منهج تجويد ٣ مستويات · تلقين «اسمع وكرِّر» · اختبار تفاعلي — اضغط للتفاصيل</div>
+      </div>
+      <input type="search" id="q" placeholder="ابحث باسم السورة أو رقمها…" oninput="renderSurahs(this.value)">
+      <div id="surahs"></div>
+    </section>
+
+    <!-- ═══ الأذكار ═══ -->
+    <section class="tab" id="t-adhkar">
+      <div class="card">
+        <div class="tas-wrap">
+          <b style="color:var(--emerald)">السبحة الرقمية 📿</b>
+          <div class="kalma" id="tasPhrase">سُبْحَانَ اللَّهِ</div>
+          <div class="tas-ring" id="tasRing" onclick="tasTap(event)">
+            <div class="tas-inner">
+              <div class="tas-num" id="tasNum">٠</div>
+              <small class="count">من <span id="tasTarget">٣٣</span> — المس للعدّ</small>
+            </div>
+          </div>
+          <div class="targets">
+            <div class="pill on" onclick="setTarget(33,this,event)">٣٣</div>
+            <div class="pill" onclick="setTarget(100,this,event)">١٠٠</div>
+            <div class="pill" onclick="setTarget(500,this,event)">٥٠٠</div>
+            <div class="pill" onclick="tasReset(event)">↺</div>
+          </div>
+          <small class="count">الإجمالي التراكمي: <b id="tasTotal">٠</b></small>
+        </div>
+      </div>
+      <h2 class="sec">الأذكار — ٨ فئات بمصادرها</h2>
+      <div class="grid2">
+        <div class="card"><div class="ic">🌅</div>أذكار الصباح<small> 8 أذكار · البخاري/مسلم</small></div>
+        <div class="card"><div class="ic">🌇</div>أذكار المساء<small> 4 أذكار · مسلم/الترمذي</small></div>
+        <div class="card"><div class="ic">🕌</div>بعد الصلاة<small> 6 أذكار · مسلم</small></div>
+        <div class="card"><div class="ic">🌌</div>أذكار النوم<small> 4 أذكار · البخاري/مسلم</small></div>
+        <div class="card"><div class="ic">⏰</div>الاستيقاظ<small> 3 أذكار · البخاري</small></div>
+        <div class="card"><div class="ic">✈️</div>السفر<small> 3 أذكار · مسلم</small></div>
+        <div class="card"><div class="ic">🩺</div>الرقية الشرعية<small> 4 أذكار · متفق عليه</small></div>
+        <div class="card"><div class="ic">💎</div>أذكار متنوعة<small> 4 أذكار · كنوز الذكر</small></div>
+      </div>
+    </section>
+
+    <!-- ═══ العطاء ═══ -->
+    <section class="tab" id="t-giving">
+      <div class="card tinted">
+        <div class="hadith" style="font-size:13px">﴿مَّثَلُ الَّذِينَ يُنفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنبَتَتْ سَبْعَ سَنَابِلَ﴾</div>
+        <div style="text-align:center;color:var(--soft);font-size:10px">البقرة ٢٦١</div>
+      </div>
+      <div class="warn-note">🛡️ التبرع يتم عبر المواقع الرسمية للجهات أدناه — لا يجمع التطبيق أي أموال. تحقّق من رسمية الجهة.</div>
+      <h2 class="sec" style="margin-top:12px">جهات رسمية موثوقة</h2>
+      <div id="charities"></div>
+      <div class="card">
+        <b>سجّل صدقتك 💚</b>
+        <div class="row" style="margin-top:8px">
+          <input id="amt" type="number" placeholder="المبلغ" style="flex:1;padding:9px;border-radius:10px;border:1px solid #ccc">
+          <label style="font-size:11px"><input type="checkbox" id="hide"> أخفِها ☆</label>
+        </div>
+        <a class="btn" onclick="addDonation(event)">حفظ الصدقة</a>
+        <div style="text-align:center;margin-top:8px" class="count">عطاؤك هذا الشهر: <b id="givMonth">☆ ☆ ☆</b></div>
+      </div>
+    </section>
+  </main>
+
+  <nav id="nav">
+    <button class="on" data-t="home"><span>🏠</span>يومي</button>
+    <button data-t="prayer"><span>🕌</span>الصلاة</button>
+    <button data-t="quran"><span>📖</span>القرآن</button>
+    <button data-t="adhkar"><span>🤲</span>الأذكار</button>
+    <button data-t="giving"><span>💚</span>العطاء</button>
+  </nav>
+</div>
+
+<script src="surah-data.js"></script>
+<script>
+const AR='٠١٢٣٤٥٦٧٨٩';
+const ar=s=>String(s).replace(/\d/g,d=>AR[d]);
+const pad=n=>String(n).padStart(2,'0');
+const fmt12=t=>{let h=t.getHours(),m=t.getMinutes(),p=h<12?'ص':'م';h=h%12||12;return ar(h+':'+pad(m))+' '+p};
+
+/* ── التواريخ ── */
+try{
+  document.getElementById('hijri').textContent =
+    new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
+}catch(e){ document.getElementById('hijri').textContent='التقويم الهجري'; }
+document.getElementById('greg').textContent =
+  new Date().toLocaleDateString('ar',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+/* ── حساب المواقيت (أم القرى — تقدير فلكي للمعاينة) ── */
+const dtr=d=>d*Math.PI/180, rtd=r=>r*180/Math.PI;
+function julian(y,m,d){if(m<=2){y--;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function sunPos(jd){const D=jd-2451545.0,g=(357.529+0.98560028*D)%360,q=(280.459+0.98564736*D)%360;
+  const L=(q+1.915*Math.sin(dtr(g))+0.02*Math.sin(dtr(2*g)))%360,e=23.439-0.00000036*D;
+  let RA=rtd(Math.atan2(Math.cos(dtr(e))*Math.sin(dtr(L)),Math.cos(dtr(L))))/15;if(RA<0)RA+=24;
+  const decl=rtd(Math.asin(Math.sin(dtr(e))*Math.sin(dtr(L))));
+  let eqt=q/15-RA;while(eqt>12)eqt-=24;while(eqt<-12)eqt+=24;return{decl,eqt}}
+function tAngle(a,lat,decl){const c=(-Math.sin(dtr(a))-Math.sin(dtr(decl))*Math.sin(dtr(lat)))/
+  (Math.cos(dtr(decl))*Math.cos(dtr(lat)));return rtd(Math.acos(Math.min(1,Math.max(-1,c))))/15}
+function asrT(f,lat,decl){return tAngle(rtd(Math.atan(1/(f+Math.tan(Math.abs(dtr(lat-decl)))))),lat,decl)}
+const LAT=31.5017, LNG=34.4668; // غزة — يُستبدل بـ GPS في التطبيق
+function timesFor(date){
+  const jd=julian(date.getFullYear(),date.getMonth()+1,date.getDate());
+  const {decl,eqt}=sunPos(jd), tz=-date.getTimezoneOffset()/60;
+  const noon=12+tz-LNG/15-eqt;
+  const mk=h=>{const d=new Date(date);d.setHours(0,Math.round(h*60),0,0);return d};
+  return [
+    ['fajr','الفجر',mk(noon-tAngle(18.5,LAT,decl))],
+    ['sunrise','الشروق',mk(noon-tAngle(0.833,LAT,decl))],
+    ['dhuhr','الظهر',mk(noon+0.033)],
+    ['asr','العصر',mk(noon+asrT(1,LAT,decl))],
+    ['maghrib','المغرب',mk(noon+tAngle(0.833,LAT,decl))],
+    ['isha','العشاء',mk(noon+tAngle(0.833,LAT,decl)+1.5)],
+  ];
+}
+let P=timesFor(new Date());
+let next=P.find(p=>['fajr','dhuhr','asr','maghrib','isha'].includes(p[0])&&p[2]>new Date())
+  || (()=>{const t=new Date();t.setDate(t.getDate()+1);return timesFor(t)[0]})();
+
+document.getElementById('nextName').textContent=next[1];
+document.getElementById('nextTime').textContent=fmt12(next[2]);
+setInterval(()=>{
+  let s=Math.max(0,Math.floor((next[2]-new Date())/1000));
+  const h=Math.floor(s/3600);s-=h*3600;const m=Math.floor(s/60);s-=m*60;
+  document.getElementById('cd').textContent=ar(pad(h)+':'+pad(m)+':'+pad(s));
+},1000);
+
+document.getElementById('times').innerHTML=P.map(p=>
+  `<div class="prayer-row ${p[0]===next[0]?'next':''}">
+     <span>${p[0]==='sunrise'?'🌅':'🕌'}</span><b class="grow">${p[1]}</b>
+     <span class="tm">${fmt12(p[2])}</span>
+   </div>`).join('');
+
+document.getElementById('dots').innerHTML=['الفجر','الظهر','العصر','المغرب','العشاء'].map((p,i)=>
+  `<div class="dot ${i<2?'done':''}"><i>${i<2?'✓':''}</i>${p}</div>`).join('');
+
+/* ── خطة اليوم ── */
+const wd=new Date().getDay(); // 0=الأحد .. 5=الجمعة
+const R=[['🌙','قيام الليل والوتر','قبل الفجر'],['📖','وردك القرآني اليومي','أي وقت'],['🤲','أذكار المساء','بعد العصر'],['🌌','أذكار النوم','قبل النوم']];
+if(wd===5)R.splice(1,0,['📿','سورة الكهف + الصلاة على النبي ﷺ','يوم الجمعة']);
+if(wd===1||wd===4)R.push(['🌙','صيام التطوّع','الاثنين/الخميس']);
+document.getElementById('routine').innerHTML=R.map((r,i)=>
+  `<div class="card routine" style="padding:11px 14px">
+     <span style="font-size:18px">${r[0]}</span>
+     <div class="t"><b style="font-size:13px">${r[1]}</b><br><small>${r[2]}</small></div>
+     <div class="chk ${i===0?'on':''}" onclick="this.classList.toggle('on')">${i===0?'✓':''}</div>
+   </div>`).join('');
+
+/* ── القرآن (نفس بيانات تطبيق Flutter — ١١٤ سورة) ── */
+function renderSurahs(q=''){
+  const list=SURAHS.filter(s=>!q||s[1].includes(q)||s[0]==q);
+  document.getElementById('surahs').innerHTML=list.map(s=>
+    `<div class="surah"><div class="num">${ar(s[0])}</div>
+     <div class="grow"><b>سورة ${s[1]}</b><small>${s[3]} · آياتها ${ar(s[2])}</small></div>
+     <span style="color:var(--gold)">‹</span></div>`).join('');
+}
+renderSurahs();
+
+/* ── السبحة ── */
+let tas={n:0,t:33,total:+(localStorage.getItem('tasbih_total')||0)};
+function drawTas(){
+  document.getElementById('tasNum').textContent=ar(tas.n);
+  document.getElementById('tasTarget').textContent=ar(tas.t);
+  document.getElementById('tasTotal').textContent=ar(tas.total);
+  const pct=tas.n/tas.t*100;
+  document.getElementById('tasRing').style.background=
+    `conic-gradient(var(--emerald) ${pct}%, #C9A22733 ${pct}%)`;
+}
+function tasTap(e){
+  tas.n++;tas.total++;localStorage.setItem('tasbih_total',tas.total);
+  if(navigator.vibrate)navigator.vibrate(15);
+  if(tas.n>=tas.t){
+    if(navigator.vibrate)navigator.vibrate([60,50,60]);
+    tas.n=0;
+    alert('ما شاء الله! أتممت العدد ✨');
+  }
+  drawTas();
+}
+function setTarget(t,el,e){e.stopPropagation();tas.t=t;tas.n=0;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');drawTas()}
+function tasReset(e){e.stopPropagation();tas.n=0;drawTas()}
+const phrases=['سُبْحَانَ اللَّهِ','الْحَمْدُ لِلَّهِ','اللَّهُ أَكْبَرُ','لَا إِلَهَ إِلَّا اللَّهُ','أَسْتَغْفِرُ اللَّهَ','اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ'];
+let pi=0;
+document.getElementById('tasPhrase').onclick=function(){pi=(pi+1)%phrases.length;this.textContent=phrases[pi]};
+document.getElementById('tasPhrase').style.cursor='pointer';
+drawTas();
+
+/* ── العطاء ── */
+const charities=[
+  ['جمعية الهلال الأحمر الفلسطيني','https://www.palestinercs.org','فلسطين',['إغاثة','صحة'],1],
+  ['مركز الملك سلمان — منصة تبرع','https://donate.ksrelief.org','دولي',['إغاثة','مشاريع'],1],
+  ['منصة إحسان','https://ehsan.sa','السعودية',['صدقة','زكاة'],0],
+  ['صندوق الزكاة','https://www.zakatfund.gov.ae','الإمارات',['زكاة','كفالة'],0],
+];
+document.getElementById('charities').innerHTML=charities.map(c=>
+  `<div class="charity">
+     <b style="font-size:13px">${c[4]?'⭐ ':''}${c[0]}</b>
+     <div class="tags" style="margin:6px 0"><span>📍${c[2]}</span>${c[3].map(t=>`<span>${t}</span>`).join('')}</div>
+     <a class="btn ghost" href="${c[1]}" target="_blank" rel="noopener">تبرع عبر الموقع الرسمي ↗</a>
+   </div>`).join('');
+let month=+(localStorage.getItem('giv_month')||0);
+function addDonation(e){
+  e.preventDefault();
+  const v=+document.getElementById('amt').value||0;
+  month+=v;localStorage.setItem('giv_month',month);
+  const h=document.getElementById('hide').checked;
+  document.getElementById('givMonth').textContent=h?'☆ ☆ ☆':ar(month | 0);
+  document.getElementById('amt').value='';
+  alert('تقبّل الله منك 🤍 (محفوظة على جهازك فقط)');
+}
+</script>
+</body>
+</html>

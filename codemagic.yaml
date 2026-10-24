@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────
+# Codemagic CI — بناء «مُلتزم» سحابياً بدون تثبيت Flutter محلياً
+# الاستخدام: ارفع المشروع إلى GitHub (خاص) ← codemagic.io ← Add app
+# ← Start build ← اختر workflow ← حمّل APK / IPA من صفحة النتائج
+# ─────────────────────────────────────────────────────────────
+workflows:
+
+  # 🤖 أندرويد: بناء APK خاص (توقيع تلقائي — يكفي للاستخدام الشخصي)
+  android-apk:
+    name: Android APK (تشغيل خاص)
+    max_build_duration: 30
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+    scripts:
+      - name: تجهيز المنصة ونسخ ملفات النشر
+        script: |
+          flutter create . --org com.multazim.app --platforms=android
+          cp deploy/android/app/src/main/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          cp -r deploy/icons/android/res/* android/app/src/main/res/
+      - name: pub get
+        script: flutter pub get
+      - name: بناء APK (موحّد + مقسّم حسب المعمارية)
+        script: |
+          flutter build apk --release
+          flutter build apk --release --split-per-abi
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+
+  # 🍎 iOS: بناء IPA بدون توقيع → يوقعّه SideStore على جهازك بحساب Apple مجاني
+  ios-ipa:
+    name: iOS IPA لـ SideStore (بدون Mac)
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: تجهيز منصة iOS
+        script: |
+          flutter create . --org com.multazim.app --platforms=ios
+      - name: pub get
+        script: flutter pub get
+      - name: بناء IPA غير موقّع
+        script: flutter build ipa --no-codesign
+    artifacts:
+      - build/ios/ipa/*.ipa

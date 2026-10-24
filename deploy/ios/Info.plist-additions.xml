@@ -1,0 +1,23 @@
+<!-- أضف هذه المفاتيح داخل <dict> في ios/Runner/Info.plist -->
+
+<!-- الموقع — نص بالعربية يشرح الوظيفة (يظهر للمستخدم) -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>نستخدم موقعك لحساب مواقيت الصلاة واتجاه القبلة بدقة، ويبقى موقعك على جهازك فقط.</string>
+
+<!-- الإشعارات للأذان والتذكيرات (iOS يسأل عند الطلب تلقائياً، لكن الوصف إلزامي في بعض الإصدارات) -->
+<key>NSUserNotificationsUsageDescription</key>
+<string>نحتاج إذن الإشعارات لصلاة الأذان والتذكيرات الدينية في وقتها.</string>
+
+<!-- تشغيل الصوت في الخلفية (الأذان والتلاوات) -->
+<key>UIBackgroundModes</key>
+<array>
+    <string>audio</string>
+    <string>fetch</string>
+</array>
+
+<!-- اللغات المدعومة -->
+<key>CFBundleLocalizations</key>
+<array>
+    <string>ar</string>
+    <string>en</string>
+</array>

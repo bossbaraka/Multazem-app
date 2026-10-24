@@ -1,0 +1,51 @@
+// ═════════════════════════════════════════════════════════════════
+//  أضف/عدّل في android/app/build.gradle.kts الناتج من `flutter create`
+// ═════════════════════════════════════════════════════════════════
+
+// ١) في أعلى الملف (بعد plugins {}): حمّل مفتاح التوقيع
+val keystoreProperties = java.util.Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace = "com.multazim.app"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    defaultConfig {
+        applicationId = "com.multazim.app"
+        minSdk = 23            // يغطي ٩٧٪+ من أجهزة المسلمين في المنطقة
+        targetSdk = flutter.targetSdkVersion
+        versionCode = 1        // زدها +١ مع كل إصدار
+        versionName = "1.0.0"
+    }
+
+    // ٢) إعدادات التوقيع للإصدار الرسمي
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String? ?: ""
+            keyPassword = keystoreProperties["keyPassword"] as String? ?: ""
+            storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
+            storePassword = keystoreProperties["storePassword"] as String? ?: ""
+        }
+    }
+
+    buildTypes {
+        release {
+            // ⚠️ للاختبار السريع قبل إنشاء keystore: استخدم debug مؤقتاً
+            signingConfig = if (keystorePropertiesFile.exists())
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
+
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+        }
+    }
+}
