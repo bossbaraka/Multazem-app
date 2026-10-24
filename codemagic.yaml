@@ -9,7 +9,7 @@ workflows:
   android-apk:
     name: Android APK (تشغيل خاص)
     max_build_duration: 30
-    instance_type: linux   # مجاني — لو رُفض، بدّلها بـ mac_mini_m1
+    instance_type: mac_mini_m2   # الخطة المجانية تدعم أجهزة Mac فقط (تبني أندرويد عادي)
     environment:
       flutter: stable
     scripts:
@@ -31,7 +31,7 @@ workflows:
   ios-ipa:
     name: iOS IPA لـ SideStore (بدون Mac)
     max_build_duration: 60
-    instance_type: mac_mini_m1
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
