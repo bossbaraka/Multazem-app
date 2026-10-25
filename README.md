@@ -17,6 +17,17 @@ python3 deploy/android/apply_android_gradle.py
 flutter run
 ```
 
+**أو بأمر واحد** (يولّد المنصات + المانيفست + الأيقونات + desugaring + مفاتيح iOS):
+
+```bash
+bash scripts/setup_platforms.sh          # macOS / Linux
+powershell -ExecutionPolicy Bypass -File scripts\setup_platforms.ps1   # Windows
+```
+
+> 🤖 **تبني باستخدام Google Antigravity؟** اتبع الدليل الكامل: [**`docs/ANTIGRAVITY.md`**](docs/ANTIGRAVITY.md)
+> (التثبيت، إعداد المشروع والوكيل، خطة المهام الجاهزة للصق، واستكشاف الأخطاء).
+> وقواعد العمل للوكيل في [**`AGENTS.md`**](AGENTS.md).
+
 > المتطلّب: Flutter 3.24+ (تحقّق: `flutter --version`)
 >
 > ⚠️ لا تُضف حزمة `vibration` القديمة: نسخة 1.x تعتمد v1 embedding المزال فتُفشل بناء أندرويد. الاهتزاز هنا عبر `HapticFeedback` المدمجة.
