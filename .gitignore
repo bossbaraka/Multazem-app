@@ -26,3 +26,7 @@ build/
 .vscode/
 **/*.iml
 .DS_Store
+
+# ── مهارات/إعداد الوكلاء (مولّدة محلياً) ──
+.agents/skills/
+.gemini/
