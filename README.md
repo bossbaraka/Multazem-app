@@ -11,10 +11,15 @@
 cd multazim
 flutter create . --org com.multazim.app --platforms=android,ios
 flutter pub get
+# إلزامي لأندرويد: تفعيل Core Library Desugaring الذي يتطلبه
+# flutter_local_notifications (يُطبَّق تلقائياً على Codemagic)
+python3 deploy/android/apply_android_gradle.py
 flutter run
 ```
 
 > المتطلّب: Flutter 3.24+ (تحقّق: `flutter --version`)
+>
+> ⚠️ لا تُضف حزمة `vibration` القديمة: نسخة 1.x تعتمد v1 embedding المزال فتُفشل بناء أندرويد. الاهتزاز هنا عبر `HapticFeedback` المدمجة.
 
 ## 🗂️ البنية
 

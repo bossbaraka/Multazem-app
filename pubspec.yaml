@@ -50,7 +50,9 @@ dependencies:
   fl_chart: ^0.68.0
   share_plus: ^10.0.2
   url_launcher: ^6.3.0
-  vibration: ^1.8.4
+  # الاهتزاز عبر HapticFeedback المدمجة (بلا حزم إضافية). لا تُضف vibration
+  # ‎1.x‎: تعتمد v1 embedding المزال فتُفشل بناء أندرويد. للأنماط المخصّصة
+  # لاحقاً: vibration ^3.2.1 (Flutter ‎3.41+‎ / Dart ‎3.11+‎).
   collection: ^1.18.0
   http: ^1.2.2
   cupertino_icons: ^1.0.8

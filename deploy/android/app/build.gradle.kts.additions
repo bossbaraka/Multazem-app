@@ -1,8 +1,35 @@
 // ═════════════════════════════════════════════════════════════════
 //  أضف/عدّل في android/app/build.gradle.kts الناتج من `flutter create`
 // ═════════════════════════════════════════════════════════════════
+//
+//  ⟨تلقائي⟩ على Codemagic (codemagic.yaml) لا تحتاج فعل شيء:
+//  السكربت deploy/android/apply_android_gradle.py يضيف desugaring تلقائياً
+//  بعد `flutter create .`، وهو الإصلاح الوحيد الإلزامي للبناء.
+//
+//  ⟨يدوي⟩ إن كنت تبني على جهازك فطبّق التعديلات أدناه.
+//  ملاحظة: قالب Flutter الحديث لم يعد يستخدم kotlin-android ولا kotlinOptions؛
+//  يضبط Kotlin عبر بلوك `kotlin { compilerOptions { … } }`.
 
-// ١) في أعلى الملف (بعد plugins {}): حمّل مفتاح التوقيع
+// ── ١) إلزامي: Core Library Desugaring ───────────────────────────
+// flutter_local_notifications ‎(10+)‎ يحتاج java.time على أندرويد الأقدم.
+// بدون هذا السطر يتوقف البناء برسالة:
+//   Dependency ':flutter_local_notifications' requires core library
+//   desugaring to be enabled for :app.
+android {
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+// ── ٢) مفتاح التوقيع (اختياري — للتوزيع على Google Play) ─────────
+// اتركه كما هو إن لم يكن لديك android/key.properties: البناء يستخدم
+// توقيع debug تلقائياً كما في قالب Flutter، وهذا يكفي للاستخدام الشخصي.
 val keystoreProperties = java.util.Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -16,13 +43,12 @@ android {
 
     defaultConfig {
         applicationId = "com.multazim.app"
-        minSdk = 23            // يغطي ٩٧٪+ من أجهزة المسلمين في المنطقة
+        minSdk = flutter.minSdkVersion   // Flutter يضمن ‎24+‎ حالياً — يكفي كل الحزم
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1        // زدها +١ مع كل إصدار
-        versionName = "1.0.0"
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
-    // ٢) إعدادات التوقيع للإصدار الرسمي
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String? ?: ""
@@ -34,18 +60,19 @@ android {
 
     buildTypes {
         release {
-            // ⚠️ للاختبار السريع قبل إنشاء keystore: استخدم debug مؤقتاً
             signingConfig = if (keystorePropertiesFile.exists())
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")
 
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
+            // ‎R8‎ مطفأ افتراضياً: الحزم (notifications/audio) تعمل بلا قواعد إضافية،
+            // وشغّله فقط بعد اختبار نسخة release على جهاز حقيقي.
+            // isMinifyEnabled = true
+            // isShrinkResources = true
+            // proguardFiles(
+            //     getDefaultProguardFile("proguard-android-optimize.txt"),
+            //     "proguard-rules.pro",
+            // )
         }
     }
 }

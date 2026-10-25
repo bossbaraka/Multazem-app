@@ -19,6 +19,10 @@
 | وصف المتجر ASO جاهز | ✅ | `deploy/store-listing.md` |
 | رمز تحليل Dart نظيف بدون تحذيرات حرجة | ✅ | `analysis_lints: flutter_lints` |
 
+> ⚠️ **ملاحظتا توافق تبني عليهما كل خطوات النشر:**
+> 1. **لا تُضف حزمة `vibration`**: نسخة `1.x` تعتمد v1 embedding المزال من Flutter، فتُفشل بناء أندرويد بـ `cannot find symbol: class Registrar`. الاهتزاز في «مُلتزم» يتم عبر `HapticFeedback` المدمجة في Flutter (السبحة/الأذكار). إن احتجت أنماط اهتزاز مخصّصة مستقبلاً فاستخدم `vibration: ^3.2.1` (يتطلب Flutter ‎3.41+‎ وDart ‎3.11+‎).
+> 2. **`flutter_local_notifications` يتطلب Core Library Desugaring** — يفعّله `deploy/android/apply_android_gradle.py` تلقائياً (محلياً وعلى Codemagic). بدونه يتوقف البناء: *"requires core library desugaring to be enabled"*.
+
 ---
 
 ## ١. المتطلّبات (تشغّلها على جهازك)
@@ -45,7 +49,12 @@ flutter test                # (اختياري — أضف اختبارات لاح
 cp deploy/android/app/src/main/AndroidManifest.xml android/app/src/main/
 cp deploy/android/app/proguard-rules.pro android/app/
 
-# دمج additions في build.gradle.kts الناتج من flutter create
+# ⭐ إلزامي: تفعيل Core Library Desugaring في build.gradle.kts
+#    (بدونه يفشل البناء برسالة "requires core library desugaring")
+python3 deploy/android/apply_android_gradle.py
+
+# ثم — اختيارياً — دمج باقي additions (مفتاح التوقيع/R8) في
+# build.gradle.kts الناتج من flutter create:
 # (افتح الملفين واطبّق التعديلات من deploy/android/app/build.gradle.kts.additions)
 
 # أيقونات أندرويد الجاهزة (فوق الافتراضية)

@@ -14,9 +14,13 @@ workflows:
     scripts:
       - name: تجهيز المنصة ونسخ ملفات النشر
         script: |
+          # ⚠️ لا تضف حزمة `vibration` مرة أخرى: نسخة 1.x تستخدم v1 embedding
+          #    المزال فتُفشل البناء. الاهتزاز داخل التطبيق يتم عبر HapticFeedback.
           flutter create . --org com.multazim.app --platforms=android
           cp deploy/android/app/src/main/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           cp -r deploy/icons/android/res/* android/app/src/main/res/
+          # تفعيل Core Library Desugaring (إلزامي لـ flutter_local_notifications)
+          python3 deploy/android/apply_android_gradle.py
       - name: pub get
         script: flutter pub get
       - name: بناء APK (موحّد + مقسّم حسب المعمارية)
