@@ -91,3 +91,8 @@ flutter:
     - assets/branding/
     - assets/sounds/
     - assets/fonts/
+
+  fonts:
+    - family: AmiriQuran
+      fonts:
+        - asset: assets/fonts/AmiriQuran-Regular.ttf

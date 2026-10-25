@@ -28,6 +28,10 @@ import re
 import sys
 from pathlib import Path
 
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
 # إصدار desugar الموصى به من flutter_local_notifications (2.1.4+)
 DESUGAR_VERSION = "2.1.4"
 
