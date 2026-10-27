@@ -56,6 +56,16 @@ python3 deploy/android/apply_android_gradle.py
 # ثم — اختيارياً — دمج باقي additions (مفتاح التوقيع/R8) في
 # build.gradle.kts الناتج من flutter create:
 # (افتح الملفين واطبّق التعديلات من deploy/android/app/build.gradle.kts.additions)
+#
+# ⚠ إن أضفت كود مفتاح التوقيع يدوياً فضع في أعلى الملف (قبل plugins { }):
+#       import java.io.FileInputStream
+#       import java.util.Properties
+#   ثم استخدم Properties() و FileInputStream() بالاسم المختصر.
+#   السبب: داخل build.gradle.kts الخاص بالتطبيق الاسم `java` هو extension إضافة
+#   جافا وليس الحزمة، فكتابة java.util.Properties() تُفشل البناء بثلاثة أخطاء:
+#       Unresolved reference: util  /  Unresolved reference: io
+#       Expression expected, but a package name found
+#   (السكربت apply_android_gradle.py يصلحها آلياً لو وقعت.)
 
 # أيقونات أندرويد الجاهزة (فوق الافتراضية)
 cp -r deploy/icons/android/res/* android/app/src/main/res/

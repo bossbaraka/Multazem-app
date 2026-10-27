@@ -12,6 +12,17 @@
     Dependency ':flutter_local_notifications' requires core library
     desugaring to be enabled for :app.
 
+كذلك يُصلح خطأً شائعاً في Kotlin DSL: كتابة `java.util.Properties()` /
+`java.io.FileInputStream(...)` داخل `android/app/build.gradle.kts`. الاسم `java`
+هناك محجوز لـ«extension» إضافة جافا وليس للحزمة، فيفشل بناء الإصدار بثلاثة أخطاء:
+
+    Unresolved reference: util
+    Unresolved reference: io
+    Expression expected, but a package name found
+
+يحوّلها السكربت إلى الأسماء المختصرة (`Properties()` / `FileInputStream()`)
+ويضمن وجود سطري الـ import في أعلى الملف.
+
 ملف publish هذا (deploy/) لا يحتوي مجلد android كاملاً، لأن Codemagic
 يولّده بـ `flutter create .`، لذا نطبّق التعديل المطلوب آلياً وبشكل idempotent.
 
@@ -37,6 +48,107 @@ DESUGAR_VERSION = "2.1.4"
 
 FLAG_KTS = "isCoreLibraryDesugaringEnabled = true"
 FLAG_GROOVY = "coreLibraryDesugaringEnabled true"
+
+# ── أسماء جافا التي يجب استيرادها صراحةً في Kotlin DSL ──────────────────────
+# المفتاح: الاسم الكامل المعطوب — القيمة: (الاسم المختصر، سطر الـ import)
+SHADOWED_JAVA_NAMES = {
+    "java.util.Properties": ("Properties", "import java.util.Properties"),
+    "java.io.FileInputStream": ("FileInputStream", "import java.io.FileInputStream"),
+}
+
+
+def import_insertion_point(lines: list[str]) -> int:
+    """موضع إدراج سطر import: بعد آخر import قائم، وإلا قبل أول بيان."""
+    last_import = -1
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped or stripped.startswith(("//", "/*", "*")):
+            continue
+        if stripped.startswith("import "):
+            last_import = i
+            continue
+        return last_import + 1 if last_import >= 0 else i
+    return last_import + 1 if last_import >= 0 else len(lines)
+
+
+def insert_import(lines: list[str], statement: str) -> bool:
+    """يضيف سطر import في أعلى السكربت إن لم يكن موجوداً. يعيد True إن أضاف."""
+    if any(line.strip() == statement for line in lines):
+        return False
+    lines.insert(import_insertion_point(lines), f"{statement}\n")
+    return True
+
+
+def ensure_blank_line_after_imports(lines: list[str]) -> bool:
+    """يفصل مجموعة الـ import عن أول بيان بعدها بسطر فارغ (تنسيق فقط)."""
+    last_import = max(
+        (i for i, line in enumerate(lines) if line.strip().startswith("import ")),
+        default=-1,
+    )
+    if last_import < 0 or last_import + 1 >= len(lines):
+        return False
+    if lines[last_import + 1].strip():
+        lines.insert(last_import + 1, "\n")
+        return True
+    return False
+
+
+def is_comment_line(line: str) -> bool:
+    """هل السطر شرح (‎//‎ أو داخل ‎/* */‎)؟ لا نلمس الشروحات أبداً."""
+    return line.strip().startswith(("//", "/*", "*"))
+
+
+def is_import_line(line: str) -> bool:
+    """هل السطر بيان import؟"""
+    return line.strip().startswith("import ")
+
+
+def fix_shadowed_java_names(lines: list[str], kotlin_dsl: bool) -> bool:
+    """
+    يستبدل `java.util.Properties` / `java.io.FileInputStream` بالأسماء المختصرة
+    ويضمن وجود الـ import المطابق. يعيد True إن عدّل شيئاً.
+
+    السبب: في `android/app/build.gradle.kts` يرتبط الاسم `java` بـ extension إضافة
+    جافا (JavaPluginExtension) فيصبح `java.util` مرجعاً غير معروف. أما في
+    `settings.gradle.kts` فلا توجد تلك الإضافة ويعمل الاسم الكامل — لذلك يُطبَّق
+    هذا الإصلاح على سكربت التطبيق فقط.
+
+    أسطر الشرح وأسطر الـ import تُستثنى من الاستبدال: الشرح قد يذكر الاسم الكامل
+    للتوضيح، والـ import ‏`import java.util.Properties` هو المكان الوحيد الصحيح له —
+    واستبداله هناك يُنتج `import Properties` ويُفسد الملف.
+    """
+    if not kotlin_dsl:
+        return False
+
+    changed = False
+    needed: list[str] = []
+
+    for i, line in enumerate(lines):
+        if is_comment_line(line) or is_import_line(line):
+            continue
+        new_line = line
+        for qualified, (short, import_line) in SHADOWED_JAVA_NAMES.items():
+            # الاسم الكامل: نستبدله سواء جاء نداءً `Properties()` أو نوعاً `: Properties`
+            qualified_re = rf"(?<![\w.]){re.escape(qualified)}(?!\w)"
+            # الاسم المختصر مستعمل فعلاً لكن الـ import ناقص
+            short_re = rf"(?<![\w.]){re.escape(short)}\s*\("
+            if re.search(qualified_re, new_line):
+                new_line = re.sub(qualified_re, short, new_line)
+            elif not re.search(short_re, new_line):
+                continue
+            if import_line not in needed:
+                needed.append(import_line)
+        if new_line != line:
+            lines[i] = new_line
+            changed = True
+
+    for import_line in sorted(needed):
+        if insert_import(lines, import_line):
+            changed = True
+
+    if changed:
+        ensure_blank_line_after_imports(lines)
+    return changed
 
 
 def app_build_file() -> Path:
@@ -129,11 +241,12 @@ def main() -> int:
     original = path.read_text(encoding="utf-8")
     lines = original.splitlines(keepends=True)
 
+    changed_imports = fix_shadowed_java_names(lines, kotlin_dsl)
     changed_flag = add_desugaring_flag(lines, kotlin_dsl)
     changed_dep = add_desugaring_dependency(lines, kotlin_dsl)
 
-    if not changed_flag and not changed_dep:
-        print(f"✓ {path.name}: desugaring مفعّل مسبقاً — لا تغيير.")
+    if not (changed_imports or changed_flag or changed_dep):
+        print(f"✓ {path.name}: desugaring مفعّل واستيراد الأصناف سليم — لا تغيير.")
         return 0
 
     updated = "".join(lines)
@@ -144,6 +257,8 @@ def main() -> int:
     path.write_text(updated, encoding="utf-8")
 
     print(f"✓ حُدّث {path.name}:")
+    if changed_imports:
+        print("  • إصلاح أسماء جافا المحجوبة (Properties / FileInputStream) + إضافة الـ import")
     if changed_flag:
         print("  • تفعيل core library desugaring داخل compileOptions")
     if changed_dep:
