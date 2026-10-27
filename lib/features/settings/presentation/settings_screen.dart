@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
 import '../../../core/providers/prayer_providers.dart';
-import '../../../core/services/location_service.dart';
 import '../../../core/services/backup_service.dart';
+import '../../../core/services/location_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/reminder_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -223,7 +223,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   setState(() {});
                 },
                 title: Text(t, style: const TextStyle(fontSize: 14)),
-                activeColor: AppColors.emerald,
+                activeThumbColor: AppColors.emerald,
               ),
           ]),
         ),

@@ -202,9 +202,9 @@ class _AudioBarState extends State<_AudioBar> {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: AppColors.headerGradient,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Row(children: [
           StreamBuilder<bool>(
@@ -217,7 +217,7 @@ class _AudioBarState extends State<_AudioBar> {
                 onPressed: () async {
                   await _ensureLoaded();
                   if (_error) {
-                    if (mounted) {
+                    if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('تعذّر تشغيل التلاوة — تحقّق من الاتصال')),
                       );
