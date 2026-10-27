@@ -1,9 +1,11 @@
-import os
+import sys
 import shutil
 import json
 from pathlib import Path
 
-ROOT = Path(r"c:\Users\victus\Downloads\multazem\Multazem-app")
+# جذر المستودع = المجلد الأب لمجلد scripts/ (يمكن تجاوزه بوسيط أول من سطر الأوامر).
+# كان المسار مثبّتاً سابقاً على مجلد Windows خاص بمطوّر واحد فيفشل السكربت على أي جهاز آخر.
+ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parents[1]
 
 print(f"Scaffolding full release-ready platforms in {ROOT}...")
 
@@ -83,17 +85,51 @@ android.enableJetifier=true
 (android_dir / "gradle.properties").write_text(gradle_properties, encoding="utf-8")
 
 # 1.4 android/app/build.gradle.kts
-app_build_gradle_kts = """plugins {
+app_build_gradle_kts = """import java.io.FileInputStream
+import java.util.Properties
+
+plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val keystoreProperties = java.util.Properties()
+// ─────────────────────────────────────────────────────────────────────────────
+// توقيع الإصدار (اختياري)
+//
+// ⚠ سطرا الـ import أعلاه إلزاميان ولا يجوز حذفهما:
+// داخل سكربت تطبيق أندرويد الاسم `java` محجوز لـ«extension» الخاص بإضافة جافا
+// (JavaPluginExtension) وليس للحزمة `java`. لذلك كتابة الاسم الكامل
+// `java.util.Properties()` هنا تفشل بثلاثة أخطاء ترجمة للسكربت:
+//     Unresolved reference: util
+//     Unresolved reference: io
+//     Expression expected, but a package name found   ← على سطر storeFile
+// (في android/settings.gradle.kts لا توجد هذه الإضافة، لذا الاسم الكامل يعمل هناك.)
+//
+// • وُجد android/key.properties + ملف المخزن ⇒ توقيع release بمفتاحك (للمتاجر).
+// • لم يوجد ⇒ توقيع debug تلقائياً، وهو كافٍ للتثبيت الشخصي على جهازك.
+// ─────────────────────────────────────────────────────────────────────────────
+val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+// مسار المخزن نسبيّاً إلى android/app/ (مثال: ../multazim-keystore.jks).
+// نتحقّق من وجود الملف فعلاً حتى لا يفشل البناء برسالة توقيع غامضة.
+val keystorePath: String = keystoreProperties.getProperty("storeFile")?.trim().orEmpty()
+val keystoreFile = if (keystorePath.isEmpty()) {
+    null
+} else {
+    file(keystorePath).takeIf { candidate -> candidate.isFile }
+}
+
+if (keystorePropertiesFile.exists() && keystoreFile == null) {
+    logger.warn(
+        "مُلتزم: android/key.properties موجود لكن تعذّر العثور على مخزن المفاتيح " +
+            "«$keystorePath» ⇒ سيُستخدم توقيع debug بدلاً من release."
+    )
 }
 
 android {
@@ -121,19 +157,21 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String? ?: ""
-            keyPassword = keystoreProperties["keyPassword"] as String? ?: ""
-            storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }
-            storePassword = keystoreProperties["storePassword"] as String? ?: ""
+            // getProperty تعيد String? مباشرةً — بلا `as String` ولا `it as String`.
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storeFile = keystoreFile
+            storePassword = keystoreProperties.getProperty("storePassword")
         }
     }
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists())
+            signingConfig = if (keystoreFile != null) {
                 signingConfigs.getByName("release")
-            else
+            } else {
                 signingConfigs.getByName("debug")
+            }
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -451,11 +489,11 @@ jobs:
 
       - name: Build APK (Release & Split ABI)
         run: |
-          flutter build apk --release
-          flutter build apk --release --split-per-abi
+          flutter build apk --release --android-skip-build-dependency-validation
+          flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
 
       - name: Build App Bundle (Google Play AAB)
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --android-skip-build-dependency-validation
 
       - name: Upload Release APKs
         uses: actions/upload-artifact@v4
