@@ -6,63 +6,49 @@ version: 0.1.0+1
 environment:
   sdk: ">=3.4.0 <4.0.0"
 
-dependencies:
-  flutter:
-    sdk: flutter
-  flutter_localizations:
-    sdk: flutter
-
-  # ── الحالة والتنقل ─────────────────────────────
-  flutter_riverpod: ^2.5.1
-  go_router: ^14.2.7
-
-  # ── المواقيت والتاريخ الهجري (Offline) ──────────
-  adhan: ^2.0.0+1
-  hijri: ^3.0.0
-  intl: ^0.20.3
-
-  # ── الموقع والبوصلة ────────────────────────────
-  geolocator: ^12.0.0
-  geocoding: ^3.0.0
-  flutter_compass: ^0.8.0
-  permission_handler: ^11.3.1
-
-  # ── الإشعارات والجدولة ─────────────────────────
-  flutter_local_notifications: ^17.2.2
-  timezone: ^0.9.4
-
-  # ── الصوتيات (تلاوات/أذان) ─────────────────────
-  just_audio: ^0.9.40
-  audio_service: ^0.18.15
-  audio_session: ^0.1.19
-
-  # ── التخزين المحلي (Offline-first) ─────────────
-  sqflite: ^2.3.3
-  path: ^1.9.0
-  path_provider: ^2.1.4
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
-  shared_preferences: ^2.3.2
-
-  # ── واجهة وأدوات ───────────────────────────────
-  google_fonts: ^6.2.1
-  flutter_svg: ^2.0.10+1
-  fl_chart: ^0.68.0
-  share_plus: ^10.0.2
-  url_launcher: ^6.3.0
   # الاهتزاز عبر HapticFeedback المدمجة (بلا حزم إضافية). لا تُضف vibration
   # ‎1.x‎: تعتمد v1 embedding المزال فتُفشل بناء أندرويد. للأنماط المخصّصة
   # لاحقاً: vibration ^3.2.1 (Flutter ‎3.41+‎ / Dart ‎3.11+‎).
+dependencies:
+  adhan: ^2.0.0+1
+  audio_service: ^0.18.15
+  audio_session: ^0.1.19
   collection: ^1.18.0
-  http: ^1.2.2
   cupertino_icons: ^1.0.8
+  fl_chart: ^0.68.0
+  flutter:
+    sdk: flutter
+  flutter_compass: ^0.8.0
+  flutter_local_notifications: ^17.2.2
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  flutter_svg: ^2.0.10+1
+  geocoding: ^3.0.0
+  geolocator: ^12.0.0
+  go_router: ^14.2.7
+  google_fonts: ^6.2.1
+  hijri: ^3.0.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  http: ^1.2.2
+  intl: ^0.20.3
+  just_audio: ^0.9.40
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  permission_handler: ^11.3.1
+  share_plus: ^10.0.2
+  shared_preferences: ^2.3.2
+  sqflite: ^2.3.3
+  timezone: ^0.9.4
+  url_launcher: ^6.3.0
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
+  flutter_lints: ^4.0.0
+  flutter_native_splash: ^2.4.2
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
-  flutter_launcher_icons: ^0.14.1
-  flutter_native_splash: ^2.4.2
 
 # ── أيقونة التطبيق (توليد تلقائي: dart run flutter_launcher_icons) ──
 flutter_launcher_icons:

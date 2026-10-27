@@ -114,16 +114,16 @@ class _RepeatModeTabState extends ConsumerState<RepeatModeTab> {
   @override
   Widget build(BuildContext context) {
     return ListView(padding: const EdgeInsets.all(16), children: [
-      OrnamentedCard(
+      const OrnamentedCard(
         color: AppColors.emerald,
         child: Column(children: [
-          const Text('«اسمع وكرِّر» — أجود طرق الحفظ 🎧',
+          Text('«اسمع وكرِّر» — أجود طرق الحفظ 🎧',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             'اختر السورة والآية، وحدّد عدد التكرارات، وسيُشغّل «مُلتزم» الآية بصوت العفاسي كرّةً بعد كرّة حتى تتقنها.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.8),
+            style: TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.8),
           ),
         ]),
       ),

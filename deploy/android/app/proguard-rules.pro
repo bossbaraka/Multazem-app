@@ -1,12 +1,9 @@
 # قواعد الحماية — مُلتزم
 # Flutter + حزم الإشعارات والصوت والموقع
 
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
+# Flutter supplies its own embedding/plugin rules via the Gradle plugin.
+# Do not keep io.flutter.** wholesale: this retains unused Play Store deferred
+# component classes and makes R8 require Play Core in standalone APK builds.
 
 # flutter_local_notifications + timezone
 -keep class com.dexterous.** { *; }

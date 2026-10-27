@@ -148,7 +148,7 @@ class _GivingScreenState extends State<GivingScreen> {
                       style: TextStyle(fontSize: 13, color: AppColors.inkSoft)),
                   const SizedBox(height: 6),
                   Text(
-                    _hidden ? '☆ ☆ ☆' : '${_monthTotal.toStringAsFixed(0)}',
+                    _hidden ? '☆ ☆ ☆' : _monthTotal.toStringAsFixed(0),
                     style: AppTheme.amiri(30, color: AppColors.emerald),
                   ),
                   const Text('بتقوى الله يكبر 💚',
@@ -163,7 +163,7 @@ class _GivingScreenState extends State<GivingScreen> {
             title: const Text('وضع الإخفاء (اكتم صدقتك)', style: TextStyle(fontSize: 14)),
             subtitle: const Text('﴿وَإِن تُخْفُوهَا وَتُؤْتُوهَا الْفُقَرَاءَ فَهُوَ خَيْرٌ لَّكُمْ﴾',
                 style: TextStyle(fontSize: 11)),
-            activeColor: AppColors.emerald,
+            activeThumbColor: AppColors.emerald,
             controlAffinity: ListTileControlAffinity.leading,
           ),
           const OrnamentDivider(),
@@ -308,7 +308,7 @@ class _GivingScreenState extends State<GivingScreen> {
               value: _hidden,
               onChanged: (v) => setSheet(() => _hidden = v),
               title: const Text('أخفِها (صدقة سر)', style: TextStyle(fontSize: 14)),
-              activeColor: AppColors.emerald,
+              activeThumbColor: AppColors.emerald,
             ),
             SizedBox(
               width: double.infinity,

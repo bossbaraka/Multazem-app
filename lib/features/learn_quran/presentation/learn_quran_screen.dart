@@ -8,8 +8,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/islamic.dart';
 import '../data/tajweed_data.dart';
-import 'repeat_mode_tab.dart';
 import 'quiz_tab.dart';
+import 'repeat_mode_tab.dart';
 
 /// علّمني القرآن — منهج تجويد ميسّر + تلقين صوتي + اختبار + تتبّع تقدّم.
 class LearnQuranScreen extends ConsumerWidget {

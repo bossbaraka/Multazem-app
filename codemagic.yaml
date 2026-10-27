@@ -11,19 +11,36 @@ workflows:
     instance_type: mac_mini_m2   # الخطة المجانية تدعم أجهزة Mac فقط (تبني أندرويد عادي)
     environment:
       flutter: stable
+      java: 17
     scripts:
       - name: تجهيز المنصة ونسخ ملفات النشر
         script: |
+          set -eu
           cp deploy/android/app/src/main/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           cp -r deploy/icons/android/res/* android/app/src/main/res/
+          cp deploy/android/app/proguard-rules.pro android/app/proguard-rules.pro
           mkdir -p android/app/src/main/res/raw
           cp assets/sounds/*.mp3 android/app/src/main/res/raw/
           # تفعيل Core Library Desugaring (إلزامي لـ flutter_local_notifications)
           python3 deploy/android/apply_android_gradle.py
       - name: pub get
         script: flutter pub get
+      - name: تجهيز مفتاح التوقيع الثابت
+        script: |
+          if [ -n "${CM_KEYSTORE_PATH:-}" ]; then
+            {
+              echo "storeFile=${CM_KEYSTORE_PATH}"
+              echo "storePassword=${CM_KEYSTORE_PASSWORD}"
+              echo "keyPassword=${CM_KEY_PASSWORD}"
+              echo "keyAlias=${CM_KEY_ALIAS}"
+            } > android/key.properties
+            echo "✓ توقيع ثابت — التحديثات تتثبّت فوق بعضها بدون مسح البيانات"
+          else
+            echo "⚠ CM_KEYSTORE غير معرّف — سيُستخدم توقيع debug (يتغيّر كل بناء)"
+          fi
       - name: بناء APK (موحّد + مقسّم حسب المعمارية)
         script: |
+          set -eu
           flutter build apk --release --android-skip-build-dependency-validation
           flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
     artifacts:
