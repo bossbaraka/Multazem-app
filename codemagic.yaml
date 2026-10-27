@@ -22,6 +22,19 @@ workflows:
           python3 deploy/android/apply_android_gradle.py
       - name: pub get
         script: flutter pub get
+      - name: تجهيز مفتاح التوقيع الثابت
+        script: |
+          if [ -n "${CM_KEYSTORE_PATH:-}" ]; then
+            {
+              echo "storeFile=${CM_KEYSTORE_PATH}"
+              echo "storePassword=${CM_KEYSTORE_PASSWORD}"
+              echo "keyPassword=${CM_KEY_PASSWORD}"
+              echo "keyAlias=${CM_KEY_ALIAS}"
+            } > android/key.properties
+            echo "✓ توقيع ثابت — التحديثات تتثبّت فوق بعضها بدون مسح البيانات"
+          else
+            echo "⚠ CM_KEYSTORE غير معرّف — سيُستخدم توقيع debug (يتغيّر كل بناء)"
+          fi
       - name: بناء APK (موحّد + مقسّم حسب المعمارية)
         script: |
           flutter build apk --release --android-skip-build-dependency-validation
