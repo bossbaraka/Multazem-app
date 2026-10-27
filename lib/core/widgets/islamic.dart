@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 
 /// بطاقة مُزخرفة بهوية «مُلتزم»: إطار ذهبي + نقشة هندسية إسلامية خافتة.
 class OrnamentedCard extends StatelessWidget {
@@ -47,7 +47,7 @@ class _IslamicPatternPainter extends CustomPainter {
       final rowOffset = ((y / cell).floor().isOdd) ? cell / 2 : 0.0;
       for (var x = cell / 2 + rowOffset; x < size.width + cell; x += cell) {
         // نجمة ثمانية = مربعان متقاطعان بزاوية ٤٥°
-        final r = cell * 0.28;
+        const r = cell * 0.28;
         final path = Path()
           ..addPolygon([
             for (var i = 0; i < 8; i++)

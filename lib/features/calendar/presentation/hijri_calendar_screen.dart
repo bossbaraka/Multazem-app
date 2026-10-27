@@ -219,9 +219,9 @@ class HijriCalendarScreen extends ConsumerWidget {
         if (isWhiteDays(today.hDay))
           OrnamentedCard(
             color: AppColors.gold.withValues(alpha: 0.12),
-            child: Text(
+            child: const Text(
               '✨ أنت الآن في الأيام البيض — يُستحب صيامها. «صيام ثلاثة أيام من كل شهر» — متفق عليه.',
-              style: const TextStyle(fontSize: 13, height: 1.8),
+              style: TextStyle(fontSize: 13, height: 1.8),
             ),
           ),
       ]),

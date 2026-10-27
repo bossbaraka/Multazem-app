@@ -11,9 +11,11 @@ workflows:
     instance_type: mac_mini_m2   # الخطة المجانية تدعم أجهزة Mac فقط (تبني أندرويد عادي)
     environment:
       flutter: stable
+      java: 17
     scripts:
       - name: تجهيز المنصة ونسخ ملفات النشر
         script: |
+          set -eu
           cp deploy/android/app/src/main/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           cp -r deploy/icons/android/res/* android/app/src/main/res/
           mkdir -p android/app/src/main/res/raw
@@ -37,6 +39,7 @@ workflows:
           fi
       - name: بناء APK (موحّد + مقسّم حسب المعمارية)
         script: |
+          set -eu
           flutter build apk --release --android-skip-build-dependency-validation
           flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
     artifacts:

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/achievements/presentation/achievements_screen.dart';
 import '../../features/adhkar/presentation/adhkar_screen.dart';
 import '../../features/adhkar/presentation/tasbih_screen.dart';
-import '../../features/achievements/presentation/achievements_screen.dart';
 import '../../features/calendar/presentation/hijri_calendar_screen.dart';
+import '../../features/giving/presentation/giving_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
 import '../../features/khatmah/presentation/khatmah_screen.dart';
 import '../../features/learn_quran/presentation/learn_quran_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/morals/presentation/morals_screen.dart';
-import '../../features/giving/presentation/giving_screen.dart';
-import '../../features/home/presentation/home_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/prayer/presentation/prayer_screen.dart';
 import '../../features/quran/presentation/quran_screen.dart';

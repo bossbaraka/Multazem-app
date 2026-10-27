@@ -63,7 +63,7 @@ class _MoralsLearnTab extends StatelessWidget {
                 title: Text(m.name,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 subtitle: Text(
-                  m.explanation.split('،').first.trim() + '…',
+                  '${m.explanation.split('،').first.trim()}…',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 11, color: AppColors.inkSoft),
@@ -311,7 +311,7 @@ class _CommitmentTabState extends ConsumerState<_CommitmentTab> {
         onPressed: () {
           if (_complete) {
             _save().then((_) {
-              if (mounted) {
+              if (context.mounted) {
                 setState(() {});
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text(
@@ -329,7 +329,7 @@ class _CommitmentTabState extends ConsumerState<_CommitmentTab> {
                   setState(() {});
                   if (_complete) {
                     _save().then((_) {
-                      if (mounted) Navigator.pop(ctx);
+                      if (ctx.mounted) Navigator.pop(ctx);
                     });
                   }
                 },
@@ -371,7 +371,7 @@ class _CommitmentTabState extends ConsumerState<_CommitmentTab> {
                   setState(() {});
                   if (_complete) {
                     _save().then((_) {
-                      if (mounted) Navigator.pop(ctx);
+                      if (ctx.mounted) Navigator.pop(ctx);
                     });
                   }
                 },

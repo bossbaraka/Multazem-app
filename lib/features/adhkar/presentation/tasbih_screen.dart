@@ -241,8 +241,8 @@ class _TasbihScreenState extends ConsumerState<TasbihScreen> {
           OrnamentedCard(
             color: AppColors.emerald,
             child: Column(children: [
-              Text('مجموع تسبيحاتك منذ البدء',
-                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              const Text('مجموع تسبيحاتك منذ البدء',
+                  style: TextStyle(color: Colors.white70, fontSize: 13)),
               const SizedBox(height: 6),
               Text(toArabicDigits(total),
                   style: AppTheme.amiri(34, color: AppColors.goldLight)),

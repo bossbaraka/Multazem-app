@@ -23,8 +23,10 @@ def main():
             tail.append(line)
         status = process.wait()
     if status and os.environ.get('GITHUB_ACTIONS') == 'true':
-        message = ''.join(tail).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-        print(f'::error title=CI command failed::{message}')
+        output = ''.join(tail)
+        for start in range(0, len(output), 2500):
+            message = output[start:start + 2500].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+            print(f'::error title=CI command failed::{message}')
     return status
 
 
