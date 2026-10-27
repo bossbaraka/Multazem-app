@@ -483,9 +483,6 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Verify Code Quality (Analyze)
-        run: python3 scripts/run_ci.py flutter analyze
-
       - name: Build APK (Release & Split ABI)
         run: |
           python3 scripts/run_ci.py flutter build apk --release --android-skip-build-dependency-validation
@@ -493,6 +490,10 @@ jobs:
 
       - name: Build App Bundle (Google Play AAB)
         run: python3 scripts/run_ci.py flutter build appbundle --release --android-skip-build-dependency-validation
+
+      - name: Verify Code Quality (Analyze)
+        if: ${{ !cancelled() }}
+        run: python3 scripts/run_ci.py flutter analyze
 
       - name: Upload Release APKs
         uses: actions/upload-artifact@v4
