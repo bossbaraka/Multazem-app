@@ -1,11 +1,12 @@
-# انسخ هذا الملف إلى android/key.properties واملأه بمعلومات مفتاحك
-# ⚠️ لا ترفع key.properties ولا multazim-keystore.jks إلى git أبداً
-storePassword=اكتب كلمة سر المخزن
-keyPassword=اكتب كلمة سر المفتاح
-keyAlias=multazim
+# انسخ هذا القالب إلى android/key.properties للاستخدام المحلي فقط.
+# لا تضع قيماً حقيقية في Git؛ android/key.properties والمخزن مستثنيان من Git.
+# للتحديث: أعد استخدام مخزن الإصدار السابق واسم alias وكلمات المرور نفسها؛ لا تنشئ مفتاحاً جديداً.
+# اكتب القيم بصيغة Java Properties (اهرب \ و = و : و # و ! والمسافات البادئة).
+storePassword=REPLACE_WITH_STORE_PASSWORD
+keyPassword=REPLACE_WITH_KEY_PASSWORD
+keyAlias=REPLACE_WITH_EXISTING_ALIAS
 storeFile=../multazim-keystore.jks
 
-# ── إنشاء المفتاح (مرة واحدة، احفظه في مكان آمن — فقدانه = عدم قدرة تحديث التطبيق مستقبلاً) ──
-# keytool -genkey -v -keystore ~/multazim-keystore.jks -keyalg RSA \
-#   -keysize 2048 -validity 10000 -alias multazim \
-#   -storetype JKS
+# أنشئ مفتاحاً جديداً مرة واحدة فقط إذا لم يوجد مفتاح إصدار سابق:
+# keytool -genkeypair -v -keystore multazim-keystore.jks -alias multazim \
+#   -keyalg RSA -keysize 2048 -validity 10000 -storetype JKS

@@ -68,5 +68,5 @@ Write-Host @"
 ✅ جاهز. الخطوات التالية:
    flutter devices
    flutter run
-   flutter build apk --release --split-per-abi
+   flutter build apk --release
 "@ -ForegroundColor Cyan

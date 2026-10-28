@@ -1,18 +1,34 @@
 # ─────────────────────────────────────────────────────────────
-# Codemagic CI — بناء «مُلتزم» سحابياً بدون تثبيت Flutter محلياً
-# الاستخدام: Start new build ← اختر workflow ← حمّل APK / IPA من Artifacts
+# Codemagic CI — يطابق GitHub Actions في مصدر التوقيع والترقيم
+# Android: signing secrets in the `multazim-android-signing` group.
 # ─────────────────────────────────────────────────────────────
 workflows:
 
-  # 🤖 أندرويد: بناء APK خاص (توقيع تلقائي — يكفي للاستخدام الشخصي)
+  # 🤖 أندرويد: APK شامل موقّع — للتوزيع والتحديث فوق النسخة السابقة
   android-apk:
-    name: Android APK (تشغيل خاص)
+    name: Android APK (توقيع إصدار ثابت)
     max_build_duration: 30
-    instance_type: mac_mini_m2   # الخطة المجانية تدعم أجهزة Mac فقط (تبني أندرويد عادي)
+    instance_type: mac_mini_m2
     environment:
+      groups:
+        - multazim-android-signing
       flutter: stable
       java: 17
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
     scripts:
+      - name: التحقق من الفرع الموثوق قبل تشغيل سكربتات المستودع
+        script: |
+          set -eu
+          if [ "${CM_BRANCH:-}" != "main" ]; then
+            echo "بناء التوزيع الموقّع مسموح من main فقط؛ اختر main أو ادمج التغييرات أولاً." >&2
+            exit 1
+          fi
       - name: تجهيز المنصة ونسخ ملفات النشر
         script: |
           set -eu
@@ -21,30 +37,25 @@ workflows:
           cp deploy/android/app/proguard-rules.pro android/app/proguard-rules.pro
           mkdir -p android/app/src/main/res/raw
           cp assets/sounds/*.mp3 android/app/src/main/res/raw/
-          # تفعيل Core Library Desugaring (إلزامي لـ flutter_local_notifications)
+          # يحافظ على Java 17 وإعدادات Core Library Desugaring وProGuard/R8 الحالية.
           python3 deploy/android/apply_android_gradle.py
-      - name: pub get
-        script: flutter pub get
-      - name: تجهيز مفتاح التوقيع الثابت
-        script: |
-          if [ -n "${CM_KEYSTORE_PATH:-}" ]; then
-            {
-              echo "storeFile=${CM_KEYSTORE_PATH}"
-              echo "storePassword=${CM_KEYSTORE_PASSWORD}"
-              echo "keyPassword=${CM_KEY_PASSWORD}"
-              echo "keyAlias=${CM_KEY_ALIAS}"
-            } > android/key.properties
-            echo "✓ توقيع ثابت — التحديثات تتثبّت فوق بعضها بدون مسح البيانات"
-          else
-            echo "⚠ CM_KEYSTORE غير معرّف — سيُستخدم توقيع debug (يتغيّر كل بناء)"
-          fi
-      - name: بناء APK (موحّد + مقسّم حسب المعمارية)
+      - name: التحقق من التوقيع وبناء APK موقّع
         script: |
           set -eu
+          signing_dir="$(mktemp -d "${TMPDIR:-/tmp}/multazim-signing.XXXXXX")"
+          cleanup_signing() {
+            python3 scripts/android_signing.py cleanup --temp-dir "$signing_dir"
+          }
+          trap cleanup_signing EXIT
+          chmod 700 "$signing_dir"
+          # نفس المتغيرات والتحقق المشترك المستخدمين في GitHub Actions.
+          # ANDROID_KEYSTORE_BASE64 نص Base64 آمن؛ لا نعتمد على متغير *_PATH ضمني.
+          python3 scripts/android_signing.py prepare --temp-dir "$signing_dir"
+          flutter pub get
           flutter build apk --release --android-skip-build-dependency-validation
-          flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/multazim-signed-release.apk
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/flutter-apk/multazim-signed-release.apk
 
   # 🍎 iOS: بناء IPA غير موقّع → يوقّعه SideStore على جهازك بحساب Apple مجاني
   ios-ipa:
