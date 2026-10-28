@@ -84,39 +84,94 @@ dart run flutter_native_splash:create
 
 ---
 
-## ٣. مفتاح التوقيع (Android — الخطوة الحرجة!)
+## ٣. توقيع Android الثابت وحماية التحديث
+
+حتى يثبت APK فوق النسخة القديمة ويبقى Hive محفوظاً، يجب أن يبقى `applicationId` كما هو (`com.multazim.app`)، وأن يُوقّع كل إصدار بالمفتاح نفسه، وأن يزيد `versionCode`. لا تغيّر معرّف التطبيق أو مفاتيح Hive أو مخطط البيانات.
+
+### إذا كان لديك إصدار Release موقّع بالفعل
+
+**لا تنشئ مفتاحاً جديداً.** استعمل ملف keystore نفسه، واسم `keyAlias` نفسه، وكلمتي مرور المخزن والمفتاح نفسيهما اللتين وُقّع بهما الإصدار المثبّت. إذا لم تعرف أي مفتاح استُخدم، قارن بصمة شهادة APK القديم والجديد بالطريقة في القسم ٤ قبل التوزيع. في Google Play مع Play App Signing، فرّق بين مفتاح الرفع ومفتاح توقيع التطبيق؛ تحديث Play يجب أن يمر عبر مسار Play، أما التثبيت المباشر فيحتاج الشهادة المطابقة للنسخة المثبّتة.
+
+### إنشاء مفتاح جديد (فقط إن لم يوجد مفتاح Release سابق)
 
 ```bash
-# مرة واحدة فقط — احفظ الملف في ٣ أماكن آمنة منفصلة
-keytool -genkey -v -keystore ~/multazim-keystore.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias multazim -storetype JKS
-
-cp deploy/android/key.properties.template android/key.properties
-# ثم عدّله بمعلومات مفتاحك
+# keytool يطلب كلمتي المرور تفاعلياً؛ لا تضعهما في سطر الأمر
+keytool -genkeypair -v -keystore multazim-keystore.jks -alias multazim \
+  -keyalg RSA -keysize 2048 -validity 10000 -storetype JKS
 ```
 
-> ⚠️ **حذف أو فقدان `multazim-keystore.jks` = استحالة تحديث تطبيقك على Play مستقبلاً.** احتفظ بـ ٣ نسخ (USB، سحابة خاصة، ورقة مشفرة).
+احتفظ بثلاث نسخ مشفّرة وآمنة من `multazim-keystore.jks` واسم alias وكلمتي المرور. فقدانها قد يمنع تحديث النسخ المثبّتة بهذا المفتاح. **لا ترسل المفتاح أو كلمات المرور في المحادثة ولا ترفعها إلى Git.**
+
+### إدخال الأسرار في GitHub Actions
+
+من المستودع: **Settings → Secrets and variables → Actions → New repository secret**. أضف هذه الأسرار الأربعة:
+
+- `ANDROID_KEYSTORE_BASE64` — محتوى keystore بعد تحويله إلى Base64 في سطر واحد.
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_PASSWORD`
+- `ANDROID_KEY_ALIAS` — alias الموجود فعلياً في keystore، وليس بالضرورة `multazim`.
+
+### إدخال القيم نفسها في Codemagic
+
+في Codemagic افتح **Team settings** أو **App settings → Environment variables**، وأنشئ مجموعة باسم `multazim-android-signing`. أضف إليها **الأسماء الأربعة والقيم نفسها** الموجودة في GitHub، واجعلها كلها `Secure`، ثم اربط المجموعة بسير العمل `android-apk`. خزّن `ANDROID_KEYSTORE_BASE64` كقيمة نصية Base64، لا كمتغير ملف: لا يعتمد الإعداد على `CM_KEYSTORE_PATH` أو على افتراض إنشاء لاحقة `_PATH` تلقائياً؛ السكربت المشترك يفك Base64 إلى ملف مؤقت بنفسه.
+
+يعمل `scripts/android_signing.py` في الخدمتين بالتحقق من اكتمال القيم، وصحة Base64، وصلاحية المخزن والـalias وكلمة مرور المفتاح عبر `keytool` قبل البناء. لا يطبع القيم، ويكتب `android/key.properties` بترميز Java Properties آمن ثم يحذفه مع keystore المؤقت حتى عند فشل البناء. لا يصل توقيع المستودع إلى فحوص Pull Request الخارجية؛ بناء التوزيع الموقّع يعمل من `main` فقط، بينما APK التحقق منفصل وموسوم بأنه غير مخصص للتوزيع.
+
+### تحويل keystore إلى Base64
+
+على macOS أو Linux:
+
+```bash
+base64 < multazim-keystore.jks | tr -d '\r\n'
+```
+
+على Windows PowerShell:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes((Resolve-Path .\multazim-keystore.jks)))
+```
+
+انسخ الناتج مباشرة إلى الحقل الآمن المناسب؛ لا تضعه في ملف بالمستودع أو في سجل الأوامر.
 
 ---
 
-## ٤. البناء والاختبار النهائي
+## ٤. البناء والترقيم واختبار التحديث
+
+مصدر رقم البناء المشترك هو `pubspec.yaml` فقط: في `version: 0.1.0+1`، الجزء `0.1.0` هو `versionName` والجزء بعد `+` هو `versionCode` على Android. زد `versionCode` يدوياً إلى رقم أعلى **لكل إصدار توزيع** (مثلاً `0.1.0+2`) وغيّر `versionName` عند إصدار نسخة منتج جديدة. لا تستخدم `github.run_number` أو عدّاد Codemagic، ولا تغيّر الرقم لفحوص PR؛ الخدمتان تبنيان رقم المصدر نفسه.
 
 ```bash
-# اختبار سريع على هاتفك
-flutter run --release
-
-# حزم الإصدار
-flutter build apk --release                          # APK موحّد
-flutter build apk --release --split-per-abi          # APKs أخفّ حسب المعمارية
-flutter build appbundle --release                    # ⭐ المطلوب رسمياً لـ Google Play
-
-# iOS (على Mac)
-flutter build ios --release
-# ثم: Xcode → Product → Archive → Distribute App → App Store Connect
+# التوزيع بهذا المفتاح فقط بعد إعداد android/key.properties محلياً
+flutter build apk --release          # APK شامل — الصيغة الموحّدة للتحديثات المباشرة
+flutter build appbundle --release    # ⭐ Google Play
 ```
 
-**تجربة يدوية إلزامية قبل الرفع (١٥ دقيقة):**
+في CI، لا يبدأ بناء التوزيع إذا غاب التوقيع أو كان غير صالح. أما بناء PR فهو بناء تحقق غير قابل للتوزيع، ومسمّى بوضوح.
+
+**لا تبدّل بين APK شامل و`--split-per-abi` على سجل التثبيت نفسه.** Flutter يضيف إلى `versionCode` المقسّم إزاحة `ABI_VERSION × 1000`؛ لذلك تكون أكواد split أعلى من APK الشامل، وقد يرفض Android الرجوع إلى APK شامل كأنه أقدم حتى مع الشهادة نفسها ([وثائق Flutter](https://docs.flutter.dev/deployment/android)). لهذا تقتصر مخرجات التوزيع هنا على APK شامل وAAB. إن اخترت البناء المقسّم محلياً، فحافظ على صيغة التقسيم نفسها وعلى ABI الجهاز في كل تحديث.
+
+### فحص تطابق شهادة التوقيع
+
+تحتاج `apksigner` من Android SDK Build Tools. افحص APK القديم الذي ثُبّت منه والجديد:
+
+```bash
+apksigner verify --print-certs old-release.apk
+apksigner verify --print-certs new-release.apk
+```
+
+قارن قيمة `Signer #1 certificate SHA-256 digest` في الناتجين؛ يجب أن تتطابق تماماً للتحديث المباشر.
+
+### اختبار تثبيت وحفظ Hive يدوياً
+
+نجاح البناء وحده لا يثبت حفظ البيانات. قبل التوزيع:
+
+1. ثبّت APK إصدار أول موقّع بالمفتاح الثابت، ثم أضف بيانات اختبار داخل التطبيق (مثل سجل صلاة/ذكر/إعداد محفوظ في Hive).
+2. ارفع رقم `versionCode` في `pubspec.yaml` فقط، وابنِ APK شاملاً بالإعداد والمفتاح نفسيهما.
+3. ثبّت الإصدار الأعلى **فوق القديم** (مثلاً `adb install -r new-release.apk`) من دون حذف التطبيق أو مسح بياناته.
+4. افتح التطبيق وتحقق من بقاء البيانات السابقة، ثم اختبر التصدير والاستعادة اختيارياً.
+
+**استثناء مهم للنسخ الحالية:** إذا كان التطبيق المثبّت موقّعاً بمفتاح Debug مختلف ولا نملك ذلك المفتاح، فلا يمكن ضمان تحديث مباشر يحفظ البيانات. قبل أي حذف، افتح **الإعدادات ← نسخ احتياطي**، صدّر JSON واحفظ `multazim_backup.json` خارج التطبيق (مثلاً على الكمبيوتر/سحابة خاصة). بعدها احذف النسخة القديمة مرة واحدة، وثبّت النسخة ذات المفتاح الثابت، ثم افتح **الإعدادات ← النسخ الاحتياطي ← استعادة** والصق محتوى ملف JSON. من تلك النقطة استخدم المفتاح الثابت نفسه لكل الإصدارات.
+
+**تجربة يدوية إضافية قبل الرفع:**
 - [ ] الأذان يصدر وإن كان التطبيق مغلقاً؟ (افعل القفل وانتظر المواقيت)
 - [ ] القرآن يعمل بدون إنترنت بعد أول فتح سورة؟
 - [ ] الصدقة تُحفظ مخفية وتبقى بعد إعادة التشغيل؟

@@ -70,5 +70,5 @@ cat <<'EOF'
    flutter test                 # (بعد إضافة اختبارات)
 
    لبناء APK للاستخدام الخاص:
-   flutter build apk --release --split-per-abi
+   flutter build apk --release
 EOF

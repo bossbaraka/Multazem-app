@@ -447,65 +447,133 @@ print("iOS scaffold complete.")
 workflows_dir = ROOT / ".github" / "workflows"
 workflows_dir.mkdir(parents=True, exist_ok=True)
 
-github_ci = """name: Build Multazim Release APK & Bundle
+github_ci = r"""name: مُلتزم Android CI and Signed Releases
 
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
 
-jobs:
-  build:
-    name: Build Android Release
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
 
+jobs:
+  verify:
+    name: Checks and non-distribution verification APK
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: stable
           cache: true
 
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      - name: Install Dependencies
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK (Release & Split ABI)
-        run: |
-          python3 scripts/run_ci.py flutter build apk --release --android-skip-build-dependency-validation
-          python3 scripts/run_ci.py flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
+      - name: Test CI and signing configuration scripts
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
-      - name: Build App Bundle (Google Play AAB)
-        run: python3 scripts/run_ci.py flutter build appbundle --release --android-skip-build-dependency-validation
-
-      - name: Verify Code Quality (Analyze)
-        if: ${{ !cancelled() }}
+      - name: Analyze Dart code
         run: python3 scripts/run_ci.py flutter analyze
 
-      - name: Upload Release APKs
-        uses: actions/upload-artifact@v4
-        with:
-          name: multazim-release-apks
-          path: build/app/outputs/flutter-apk/*.apk
+      - name: Run Flutter tests
+        run: python3 scripts/run_ci.py flutter test
 
-      - name: Upload Google Play AAB Bundle
+      # This release-mode APK intentionally uses Gradle's debug fallback only
+      # as a non-distribution compilation/R8 verification build. It has no secrets.
+      - name: Build verification APK (debug-signed, not for distribution)
+        run: |
+          python3 scripts/run_ci.py flutter build apk --release --android-skip-build-dependency-validation
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/multazim-verification-debug-signed-not-for-distribution.apk
+
+      - name: Upload verification APK (not for distribution)
         uses: actions/upload-artifact@v4
         with:
-          name: multazim-google-play-bundle
-          path: build/app/outputs/bundle/release/*.aab
+          name: multazim-verification-debug-signed-not-for-distribution-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/multazim-verification-debug-signed-not-for-distribution.apk
+          if-no-files-found: error
+
+  signed-release:
+    name: Signed Android distribution build
+    needs: verify
+    if: >-
+      ${{
+        needs.verify.result == 'success' &&
+        github.ref == 'refs/heads/main' &&
+        (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Validate secrets, keystore, alias, and prepare signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -eu
+          signing_dir="$(mktemp -d "${RUNNER_TEMP}/multazim-signing.XXXXXX")"
+          printf 'MULTAZIM_SIGNING_TEMP_DIR=%s\n' "$signing_dir" >> "$GITHUB_ENV"
+          chmod 700 "$signing_dir"
+          python3 scripts/android_signing.py prepare --temp-dir "$signing_dir"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build signed universal APK and Play bundle
+        run: |
+          python3 scripts/run_ci.py flutter build apk --release --android-skip-build-dependency-validation
+          python3 scripts/run_ci.py flutter build appbundle --release --android-skip-build-dependency-validation
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/multazim-signed-release.apk
+          mv build/app/outputs/bundle/release/app-release.aab build/app/outputs/bundle/release/multazim-signed-release.aab
+
+      - name: Clean temporary signing files
+        if: ${{ always() }}
+        run: |
+          if [ -n "${MULTAZIM_SIGNING_TEMP_DIR:-}" ]; then
+            python3 scripts/android_signing.py cleanup --temp-dir "$MULTAZIM_SIGNING_TEMP_DIR"
+          fi
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: multazim-signed-release-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/multazim-signed-release.apk
+          if-no-files-found: error
+
+      - name: Upload signed Google Play bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: multazim-signed-release-aab-${{ github.sha }}
+          path: build/app/outputs/bundle/release/multazim-signed-release.aab
+          if-no-files-found: error
 """
 (workflows_dir / "build-apk.yml").write_text(github_ci, encoding="utf-8")
 
